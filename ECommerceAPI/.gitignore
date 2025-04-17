@@ -1,0 +1,23 @@
+# Build output
+/bin/
+/obj/
+
+# User-specific files
+.vs/
+.vscode/
+*.user
+*.suo
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# EF Core migrations (if you don’t want them versioned)
+/Migrations/
+
+# SQLite DB file
+ecommerce.db
+
+# Secrets
+appsettings.*.json       # dev overrides
+secrets.json             # dotnet user-secrets
