@@ -25,8 +25,8 @@ namespace ECommerceAPI.Controllers
             return p == null ? NotFound() : Ok(p);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
-        [Authorize]
         public async Task<IActionResult> Post(CreateProductDto dto)
         {
             var prod = new Product
@@ -41,8 +41,8 @@ namespace ECommerceAPI.Controllers
             return CreatedAtAction(nameof(Get), new { id = prod.Id }, prod);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        [Authorize]
         public async Task<IActionResult> Put(int id, UpdateProductDto dto)
         {
             if (id != dto.Id) return BadRequest();
@@ -58,8 +58,8 @@ namespace ECommerceAPI.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
-        [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
             var prod = await _context.Products.FindAsync(id);

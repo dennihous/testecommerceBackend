@@ -31,12 +31,21 @@ namespace ECommerceAPI.Controllers
                 return BadRequest("Email already in use.");
 
             CreatePasswordHash(model.Password, out byte[] hash, out byte[] salt);
-            var user = new User { Email = model.Email, PasswordHash = hash, PasswordSalt = salt };
+            var user = new User { Email = model.Email, Role = UserRole.Customer, PasswordHash = hash, PasswordSalt = salt };
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return Ok(new { user.Id, user.Email });
+            var customer = new Customer
+            {
+                Name = model.Email.Split('@')[0],
+                Email = model.Email
+            };
+
+            _context.Customers.Add(customer);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { user.Id, user.Email, customerId = customer.Id });
         }
 
         [HttpPost("login")]
@@ -54,7 +63,8 @@ namespace ECommerceAPI.Controllers
         {
             var claims = new List<Claim> {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Email, user.Email)
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Role, user.Role.ToString())
             };
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

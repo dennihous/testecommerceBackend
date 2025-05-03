@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using ECommerceAPI.Data;
 using ECommerceAPI.Dtos;
 using ECommerceAPI.Models;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ECommerceAPI.Controllers
 {
@@ -12,6 +14,19 @@ namespace ECommerceAPI.Controllers
     {
         private readonly AppDbContext _context;
         public CustomersController(AppDbContext context) => _context = context;
+
+        [HttpGet("me")]
+        [Authorize]
+        public async Task<IActionResult> GetMe()
+        {
+            var email = User.FindFirstValue(ClaimTypes.Email);
+            if (email is null) return Unauthorized();
+
+            var customer = await _context.Customers
+                                     .FirstOrDefaultAsync(c => c.Email == email);
+
+            return customer is null ? NotFound() : Ok(customer);
+        }
 
         [HttpGet]
         public async Task<IActionResult> Get() => Ok(await _context.Customers.ToListAsync());
