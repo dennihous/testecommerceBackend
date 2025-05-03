@@ -5,6 +5,7 @@ using ECommerceAPI.Dtos;
 using ECommerceAPI.Models;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using System.Text;
 
 namespace ECommerceAPI.Controllers
 {
@@ -14,6 +15,29 @@ namespace ECommerceAPI.Controllers
     {
         private readonly AppDbContext _context;
         public CustomersController(AppDbContext context) => _context = context;
+
+        [HttpGet("me")]
+        [Authorize]
+        public async Task<IActionResult> GetMe()
+        {
+            var email = User.FindFirstValue(ClaimTypes.Email);
+            if (email is null) return Unauthorized();
+
+            var cust = await _context.Customers.FirstOrDefaultAsync(c => c.Email == email);
+
+            if (cust is null)
+            {
+                cust = new Customer
+                {
+                    Name  = email.Split('@')[0],
+                    Email = email
+                };
+                _context.Customers.Add(cust);
+                await _context.SaveChangesAsync();
+            }
+
+            return Ok(cust);
+        }
 
         [HttpPut("me")]
         [Authorize]
