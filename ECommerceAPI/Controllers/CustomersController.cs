@@ -15,18 +15,23 @@ namespace ECommerceAPI.Controllers
         private readonly AppDbContext _context;
         public CustomersController(AppDbContext context) => _context = context;
 
-        [HttpGet("me")]
+        [HttpPut("me")]
         [Authorize]
-        public async Task<IActionResult> GetMe()
+        public async Task<IActionResult> UpdateMe(UpdateProfileDto dto)
         {
             var email = User.FindFirstValue(ClaimTypes.Email);
             if (email is null) return Unauthorized();
 
-            var customer = await _context.Customers
-                                     .FirstOrDefaultAsync(c => c.Email == email);
+            var cust = await _context.Customers.FirstOrDefaultAsync(c => c.Email == email);
+            if (cust is null) return NotFound();
 
-            return customer is null ? NotFound() : Ok(customer);
+            cust.Name = dto.Name;
+            cust.Email = dto.Email;
+
+            await _context.SaveChangesAsync();
+            return Ok(cust);
         }
+
 
         [HttpGet]
         public async Task<IActionResult> Get() => Ok(await _context.Customers.ToListAsync());

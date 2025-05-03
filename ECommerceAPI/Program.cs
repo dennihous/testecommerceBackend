@@ -5,7 +5,6 @@ using System.Text;
 using ECommerceAPI.Data;
 using ECommerceAPI.Models;
 using System.Text.Json.Serialization;
-using System.Text;
 using System.Security.Cryptography;
 
 var builder = WebApplication.CreateBuilder(args);
