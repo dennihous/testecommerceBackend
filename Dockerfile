@@ -1,24 +1,4 @@
-# FROM mcr.microsoft.com/dotnet/sdk:9.0
-# WORKDIR /src
-
-# COPY ./ECommerceAPI/ ./ECommerceAPI/
-# COPY ./testecommerceFrontend ./testecommerceFrontend
-
-# WORKDIR /src/testecommerceFrontend
-# RUN npm install && npm run build
-
-# WORKDIR /src
-# RUN mkdir ./ECommerceAPI/wwwroot/
-# RUN cp -r ./testecommerceFrontend/dist/* ./ECommerceAPI/wwwroot/
-
-# RUN dotnet restore ./ECommerceAPI/ECommerceAPI.csproj
-
-# WORKDIR /src/ECommerceAPI
-# RUN dotnet build
-
-# ENTRYPOINT ["ls", "-a", "./wwwroot/"]
-
-# ─── BUILD STAGE ──────────────────────────────────────────────────────────────
+# Build
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
@@ -34,20 +14,20 @@ RUN apt-get update \
 COPY ./ECommerceAPI/ ./ECommerceAPI/
 COPY ./testecommerceFrontend/ ./testecommerceFrontend/
 
-# 1) Build the frontend
+# Build the frontend
 WORKDIR /src/testecommerceFrontend
 RUN npm install && npm run build
 
-# 2) Copy built frontend into the API's wwwroot
+# Copy built frontend into the API's wwwroot
 WORKDIR /src/ECommerceAPI
 RUN mkdir -p wwwroot && \
     cp -r ../testecommerceFrontend/dist/* wwwroot/
 
-# 3) Restore & publish the API
+# Restore & publish the API
 RUN dotnet restore ECommerceAPI.csproj
 RUN dotnet publish ECommerceAPI.csproj -c Release -o /app/publish
 
-# ─── RUNTIME STAGE ────────────────────────────────────────────────────────────
+# run time
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 
