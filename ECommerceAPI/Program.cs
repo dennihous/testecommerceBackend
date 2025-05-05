@@ -9,12 +9,14 @@ using System.Security.Cryptography;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddCors(opts =>
+builder.Services.AddCors(options =>
 {
-    opts.AddPolicy("Frontend", policy =>
-        policy.WithOrigins("http://localhost:3000") 
-              .AllowAnyHeader()
-              .AllowAnyMethod());
+    options.AddPolicy("Frontend", policy => 
+        policy
+          .AllowAnyOrigin()
+          .AllowAnyHeader()
+          .AllowAnyMethod()
+    );
 });
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -54,6 +56,12 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+
+app.UseDefaultFiles();        
+
+// — Serve static files from wwwroot/
+app.UseStaticFiles();  
+
 app.UseCors("Frontend");
 
 app.UseSwagger();
@@ -68,6 +76,8 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
+     db.Database.Migrate();
+
     if (!db.Users.Any(u => u.Role == UserRole.Admin))
     {
         byte[] passwordSalt, passwordHash;
@@ -80,8 +90,8 @@ using (var scope = app.Services.CreateScope())
 
         db.Users.Add(new User
         {
-            Email        = "admin@shop.local",
-            Role         = UserRole.Admin,
+            Email = "admin@shop.local",
+            Role = UserRole.Admin,
             PasswordHash = passwordHash,
             PasswordSalt = passwordSalt
         });
